@@ -14,6 +14,7 @@ A mini text-based rogue-like written in Ruby
 ## How to play
 
 `H`, `J`, `K`, `L` - left, down, up, right (a-la vim)
+
 `Q` - quit
 
 ## License
