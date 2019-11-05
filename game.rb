@@ -29,15 +29,48 @@ class Tile
   end
 end
 
-class Game
+class World
+  attr_reader :tiles
+
   def initialize
-    @world = 24.times.map do
-      80.times.map { Tile.new('.', true) }
+    @tiles = 24.times.map do
+      80.times.map { Tile.new('W', false) }
     end
 
-    (37..42).each do |r|
-      @world[10][r] = Tile.new('W', false)
+    generate_room(12, 40)
+    generate_passage(12, 40, 20, 60)
+  end
+
+  def generate_room(r, c)
+    (r-2..r+2).each do |r|
+      (c-2..c+2).each do |c|
+        @tiles[r][c] = Tile.new('.', true)
+      end
     end
+  end
+
+  def generate_passage(r1, c1, r2, c2)
+    (r1..r2).each do |r|
+      @tiles[r][c1] = Tile.new('.', true)
+    end
+    (c1..c2).each do |c|
+      @tiles[r2][c] = Tile.new('.', true)
+    end
+  end
+
+  def [](r, c)
+    return nil if r < 0 || c < 0
+    @tiles.dig(r, c)
+  end
+
+  def []=(r, c, tile)
+    @tiles[r][c] = tile
+  end
+end
+
+class Game
+  def initialize
+    @world = World.new
 
     @player = Player.new(12, 40)
     @running = true
@@ -50,7 +83,7 @@ class Game
 
   def draw
     clear_screen
-    @world.each_with_index do |tiles, row|
+    @world.tiles.each_with_index do |tiles, row|
       tiles.each_with_index do |tile, col|
         if @player.row == row && @player.col == col
           @player.draw
@@ -75,32 +108,27 @@ class Game
   end
 
   def move_player_up
-    if tile(@player.row-1, @player.col)&.traversable
+    if @world[@player.row-1, @player.col]&.traversable
       @player.row -= 1
     end
   end
 
   def move_player_down
-    if tile(@player.row+1, @player.col)&.traversable
+    if @world[@player.row+1, @player.col]&.traversable
       @player.row += 1
     end
   end
 
   def move_player_left
-    if tile(@player.row, @player.col-1)&.traversable
+    if @world[@player.row, @player.col-1]&.traversable
       @player.col -= 1
     end
   end
 
   def move_player_right
-    if tile(@player.row, @player.col+1)&.traversable
+    if @world[@player.row, @player.col+1]&.traversable
       @player.col += 1
     end
-  end
-
-  def tile(row, col)
-    return nil if row < 0 || col < 0
-    @world.dig(row, col)
   end
 
   def run
