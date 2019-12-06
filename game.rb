@@ -32,9 +32,11 @@ end
 class World
   attr_reader :tiles
 
-  def initialize
-    @tiles = 24.times.map do
-      80.times.map { Tile.new('W', false) }
+  def initialize(width, height)
+    @width = width
+    @height = height
+    @tiles = height.times.map do
+      width.times.map { Tile.new('W', false) }
     end
 
     generate_room(12, 40)
@@ -70,7 +72,7 @@ end
 
 class Game
   def initialize
-    @world = World.new
+    @world = World.new(100, 50)
 
     @player = Player.new(12, 40)
     @running = true
