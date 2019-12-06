@@ -2,6 +2,9 @@
 
 require 'io/console'
 
+require_relative 'world'
+require_relative 'generator'
+
 class Terminal
   def hide_cursor
     print "\033[?25l"
@@ -77,69 +80,16 @@ class Player
   end
 end
 
-class Tile
-  attr_reader :traversable
-
-  def initialize(char, traversable)
-    @explored = false
-    @traversable = traversable
-    @char = char
-  end
-
-  def draw
-    print @char
-  end
-end
-
-class World
-  attr_reader :tiles
-
-  def initialize(width, height)
-    @width = width
-    @height = height
-    @tiles = height.times.map do
-      width.times.map { Tile.new('W', false) }
-    end
-
-    generate_room(25, 50)
-    generate_passage(25, 50, 33, 70)
-  end
-
-  def generate_room(r, c)
-    (r-2..r+2).each do |r|
-      (c-2..c+2).each do |c|
-        @tiles[r][c] = Tile.new('.', true)
-      end
-    end
-  end
-
-  def generate_passage(r1, c1, r2, c2)
-    (r1..r2).each do |r|
-      @tiles[r][c1] = Tile.new('.', true)
-    end
-    (c1..c2).each do |c|
-      @tiles[r2][c] = Tile.new('.', true)
-    end
-  end
-
-  def [](r, c)
-    return nil if r < 0 || c < 0
-    @tiles.dig(r, c)
-  end
-
-  def []=(r, c, tile)
-    @tiles[r][c] = tile
-  end
-end
-
 class Game
   attr_accessor :terminal, :world, :player, :running, :world_viewport
 
   def initialize
     @terminal = Terminal.new
-    @world = World.new(100, 50)
+    generator = Generator.new(11, 11, 5, 5)
+    generator.generate
+    @world = generator.create_world
 
-    @player = Player.new(25, 50)
+    @player = Player.new(world.height / 2, world.width / 2)
     @running = true
 
     @world_viewport = [2, 22, terminal.width - 22, terminal.height - 2]
